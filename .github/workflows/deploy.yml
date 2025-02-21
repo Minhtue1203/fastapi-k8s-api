@@ -32,7 +32,7 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
 
     - name: Configure Docker for GCR
-      run: gcloud auth configure-docker gcr.io
+      run: gcloud auth configure-docker 
 
     - name: Build, Tag, and Push Docker image
       run: |
