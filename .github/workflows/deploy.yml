@@ -5,6 +5,7 @@ on:
     branches:
       - main
 
+# Global environment variables
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GKE_CLUSTER: my-cluster
@@ -21,30 +22,38 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    
+    # Authenticate to Google Cloud
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-   
+    # Set up gcloud CLI
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-    - name: Configure Docker for GCR
-      run: gcloud auth configure-docker
-
-    - name: Build Docker image
+    # Build and push Docker image
+    - name: Build and Push Docker image
+      env:
+        IMAGE: gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-hello
       run: |
+        # Authenticate Docker with GCR
+        gcloud auth configure-docker gcr.io
+
+        # Build Docker image
         docker build -t $IMAGE .
+
+        # Push Docker image to GCR
         docker push $IMAGE
 
+    # Get GKE credentials
     - name: Get GKE credentials
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER --region $GKE_ZONE
 
+    # Deploy to GKE
     - name: Deploy to GKE
       run: |
         kubectl apply -f deployment.yaml
