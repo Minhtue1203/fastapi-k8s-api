@@ -5,17 +5,17 @@ on:
     branches:
       - main
 
-env:
-  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  GKE_CLUSTER: my-cluster
-  GKE_ZONE: europe-west1
-  DEPLOYMENT_NAME: fastapi-deployment
-  IMAGE_NAME: fastapi-hello
-
 jobs:
   build-and-deploy:
     name: Build and Deploy
     runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: fastapi-hello
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GKE_CLUSTER: my-cluster
+      GKE_ZONE: europe-west1
+      DEPLOYMENT_NAME: fastapi-deployment
 
     steps:
     - name: Checkout code
@@ -29,17 +29,21 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
       with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        project_id: ${{ env.GCP_PROJECT_ID }}
 
     - name: Configure Docker for GCR
       run: gcloud auth configure-docker
 
+    - name: Debug Environment Variables
+      run: |
+        echo "IMAGE_NAME is: '${{ env.IMAGE_NAME }}'"
+        echo "GCP_PROJECT_ID is: '${{ env.GCP_PROJECT_ID }}'"
+
     - name: Build, Tag, and Push Docker image
       run: |
-        docker build -t ${{ env.IMAGE_NAME }} .
-        docker tag ${{ env.IMAGE_NAME }} gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest
-
-        docker push gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest
+        docker build -t "${{ env.IMAGE_NAME }}" .
+        docker tag "${{ env.IMAGE_NAME }}" "gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest"
+        docker push "gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest"
 
     - name: Get GKE credentials
       run: |
