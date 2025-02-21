@@ -38,6 +38,7 @@ jobs:
       run: |
         docker build -t ${{ env.IMAGE_NAME }} .
         docker tag ${{ env.IMAGE_NAME }} gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest
+
         docker push gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest
 
     - name: Get GKE credentials
