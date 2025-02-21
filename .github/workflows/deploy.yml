@@ -32,7 +32,7 @@ jobs:
         project_id: ${{ env.GCP_PROJECT_ID }}
 
     - name: Configure Docker for GCR
-      run: gcloud auth configure-docker gcr.io
+      run: gcloud auth configure-docker us-docker.pkg.dev
 
     - name: Debug Environment Variables
       run: |
@@ -41,10 +41,10 @@ jobs:
 
     - name: Build, Tag, and Push Docker image
       run: |
-        IMAGE_TAG="gcr.io/soy-beaker-451600-p5/fastapi-hello/demo:latest"
+        IMAGE_TAG="us-docker.pkg.dev/soy-beaker-451600-p5/fastapi-hello/demo:latest"
         echo "Using image tag: $IMAGE_TAG"
         docker build -t "$IMAGE_TAG" .
-        
+       
         docker push "$IMAGE_TAG"
 
     - name: Get GKE credentials
