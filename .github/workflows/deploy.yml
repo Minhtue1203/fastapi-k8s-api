@@ -5,13 +5,12 @@ on:
     branches:
       - main
 
-# Global environment variables
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GKE_CLUSTER: my-cluster
   GKE_ZONE: europe-west1
   DEPLOYMENT_NAME: fastapi-deployment
-  IMAGE: gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-hello
+  IMAGE_NAME: fastapi-hello
 
 jobs:
   build-and-deploy:
@@ -22,40 +21,36 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Authenticate to Google Cloud
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    # Set up gcloud CLI
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-    # Build and push Docker image
-    - name: Build and Push Docker image
-      env:
-        IMAGE: gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-hello
-      run: |
-        # Authenticate Docker with GCR
-        gcloud auth configure-docker gcr.io
+    - name: Configure Docker for GCR
+      run: gcloud auth configure-docker gcr.io
 
-        # Build Docker image
-        docker build -t $IMAGE .
+    - name: Build, Tag, and Push Docker image
+      run: |
+        # Build Docker image locally
+        docker build -t $IMAGE_NAME .
+
+        # Correctly tag the Docker image for GCR
+        docker tag $IMAGE_NAME gcr.io/$PROJECT_ID/$IMAGE_NAME:latest
 
         # Push Docker image to GCR
-        docker push $IMAGE
+        docker push gcr.io/$PROJECT_ID/$IMAGE_NAME:latest
 
-    # Get GKE credentials
     - name: Get GKE credentials
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER --region $GKE_ZONE
 
-    # Deploy to GKE
     - name: Deploy to GKE
       run: |
         kubectl apply -f deployment.yaml
-        kubectl set image deployment/$DEPLOYMENT_NAME fastapi-container=$IMAGE
+        kubectl set image deployment/$DEPLOYMENT_NAME fastapi-container=gcr.io/$PROJECT_ID/$IMAGE_NAME:latest
 
