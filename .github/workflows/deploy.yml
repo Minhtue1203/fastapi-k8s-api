@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GKE_CLUSTER: my-cluster
   GKE_ZONE: europe-west1
   DEPLOYMENT_NAME: fastapi-deployment
@@ -36,14 +36,9 @@ jobs:
 
     - name: Build, Tag, and Push Docker image
       run: |
-        # Build Docker image locally
-        docker build -t $IMAGE_NAME .
-
-        # Correctly tag the Docker image for GCR
-        docker tag $IMAGE_NAME gcr.io/$PROJECT_ID/$IMAGE_NAME:latest
-
-        # Push Docker image to GCR
-        docker push gcr.io/$PROJECT_ID/$IMAGE_NAME:latest
+        docker build -t ${{ env.IMAGE_NAME }} .
+        docker tag ${{ env.IMAGE_NAME }} gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest
+        docker push gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest
 
     - name: Get GKE credentials
       run: |
@@ -52,5 +47,5 @@ jobs:
     - name: Deploy to GKE
       run: |
         kubectl apply -f deployment.yaml
-        kubectl set image deployment/$DEPLOYMENT_NAME fastapi-container=gcr.io/$PROJECT_ID/$IMAGE_NAME:latest
+        kubectl set image deployment/$DEPLOYMENT_NAME fastapi-container=gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest
 
