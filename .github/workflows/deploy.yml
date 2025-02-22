@@ -45,6 +45,10 @@ jobs:
         docker tag "${{ env.IMAGE_NAME }}" "gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest"
         docker push "gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest"
 
+    - name: Install gke-gcloud-auth-plugin
+      run: |
+        gcloud components install gke-gcloud-auth-plugin
+
     - name: Get GKE credentials
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER --region $GKE_ZONE
