@@ -56,5 +56,5 @@ jobs:
     - name: Deploy to GKE
       run: |
         kubectl apply -f deployment.yaml
-        kubectl set image deployment/$DEPLOYMENT_NAME fastapi-container=gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest
+        kubectl rollout restart deployment ${{ env.DEPLOYMENT_NAME }}
 
