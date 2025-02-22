@@ -29,11 +29,11 @@ jobs:
          export_default_credentials: true
 
     - name: Configure Docker for GCR
-      run: gcloud auth configure-docker us-docker.pkg.dev
+      run: gcloud auth configure-docker gcr.io
 
     - name: Build, Tag, and Push Docker image
       run: |
-        IMAGE_TAG="us-docker.pkg.dev/soy-beaker-451600-p5/fastapi-hello/demo:latest"
+        IMAGE_TAG="gcr.io/soy-beaker-451600-p5/fastapi-hello/demo:latest"
         echo "Using image tag: $IMAGE_TAG"
         docker build -t "$IMAGE_TAG" .
        
