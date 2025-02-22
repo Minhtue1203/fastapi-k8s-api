@@ -15,6 +15,7 @@ spec:
       containers:
       - name: fastapi-container
         image: gcr.io/soy-beaker-451600-p5/fastapi-hello:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
 ---
